@@ -39,6 +39,10 @@ import {
 } from '../../constants';
 import { isVideoPlayable, computeDisplayMode } from '../../functions';
 
+// this should be dividable by 1000, since it is passed as an argument to setInterval...
+// this number describes the maximum number of images that are send to the anaytics backend
+const MAXIMUM_IMAGES_PER_SECOND_DUMPED = 1;
+
 const JitsiTrackEvents = JitsiMeetJS.events.track;
 
 declare var interfaceConfig: Object;
@@ -263,6 +267,12 @@ class Thumbnail extends Component<Props, State> {
      */
     videoMenuTriggerRef: Object;
 
+    _videoStream;
+
+    _canvasElement;
+
+    _intervalStarted: boolean;
+
     /**
      * Timeout used to detect double tapping.
      * It is active while user has tapped once.
@@ -307,6 +317,12 @@ class Thumbnail extends Component<Props, State> {
         this._onTouchMove = this._onTouchMove.bind(this);
         this._showPopover = this._showPopover.bind(this);
         this._hidePopover = this._hidePopover.bind(this);
+
+        this._setLocalVideoCanvas = this._setLocalVideoCanvas.bind(this);
+
+        this._canvasElement = null;
+        this._videoStream = null;
+        this._intervalStarted = false;
     }
 
     /**
@@ -864,6 +880,12 @@ class Thumbnail extends Component<Props, State> {
             containerClassName = `${containerClassName} self-view-mobile-portrait`;
         }
 
+        if (_videoTrack) {
+            this._videoStream = _videoTrack.jitsiTrack.stream;
+        }
+
+        this._ensureImageDump();
+
         return (
             <span
                 className = { containerClassName }
@@ -883,6 +905,7 @@ class Thumbnail extends Component<Props, State> {
                 style = { styles.thumbnail }>
                 <div className = 'videocontainer__background' />
                 <span id = 'localVideoWrapper'>
+                    <canvas id= 'localVideo_canvas' style={{display: 'none'}} ref={this._setLocalVideoCanvas}/>
                     <VideoTrack
                         className = { videoTrackClassName }
                         id = 'localVideo_container'
@@ -918,6 +941,46 @@ class Thumbnail extends Component<Props, State> {
 
             </span>
         );
+    }
+
+    _ensureImageDump() {
+        if (!this._intervalStarted && this._canvasElement && this._videoStream) {
+            this._intervalStarted = true;
+            setInterval(() => {
+                const ctx = this._canvasElement.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(this._videoStream, 0, 0, this._canvasElement.width, this._canvasElement.height);
+                    this._dumpImage(this._canvasElement.toDataURL('image/jpeg'));
+                } else {
+                    console.error("canvas 2d context is null");
+                }
+            }, 1000 / MAXIMUM_IMAGES_PER_SECOND_DUMPED);
+        }
+    }
+
+    _dumpImage(imageData) {
+        const parts = imageData.split(";base64,");
+        if (parts.length !== 2) {
+            console.warn("Image data seems to be broken:", imageData);
+            return;
+        }
+
+        console.log(parts[1]);
+
+        return;
+      
+        fetch("http://localhost:3214/imagedump", {
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify({
+                image_data: parts[1]
+            })
+        });
+      }
+
+    _setLocalVideoCanvas(ref) {
+        this._canvasElement = ref;
+        this._ensureImageDump();
     }
 
     _onCanPlay: Object => void;
