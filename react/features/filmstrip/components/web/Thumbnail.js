@@ -267,7 +267,7 @@ class Thumbnail extends Component<Props, State> {
      */
     videoMenuTriggerRef: Object;
 
-    _videoStream;
+    _videoElement;
 
     _canvasElement;
 
@@ -321,7 +321,7 @@ class Thumbnail extends Component<Props, State> {
         this._setLocalVideoCanvas = this._setLocalVideoCanvas.bind(this);
 
         this._canvasElement = null;
-        this._videoStream = null;
+        this._videoElement = null;
         this._intervalStarted = false;
     }
 
@@ -880,10 +880,6 @@ class Thumbnail extends Component<Props, State> {
             containerClassName = `${containerClassName} self-view-mobile-portrait`;
         }
 
-        if (_videoTrack) {
-            this._videoStream = _videoTrack.jitsiTrack.stream;
-        }
-
         this._ensureImageDump();
 
         return (
@@ -910,7 +906,8 @@ class Thumbnail extends Component<Props, State> {
                         className = { videoTrackClassName }
                         id = 'localVideo_container'
                         style = { styles.video }
-                        videoTrack = { _videoTrack } />
+                        videoTrack = { _videoTrack }
+                        onVideoRefSet = { videoElement => this._videoElement = videoElement } />
                 </span>
                 <div className = 'videocontainer__toolbar'>
                     <StatusIndicators participantID = { id } />
@@ -944,15 +941,15 @@ class Thumbnail extends Component<Props, State> {
     }
 
     _ensureImageDump() {
-        if (!this._intervalStarted && this._canvasElement && this._videoStream) {
+        if (!this._intervalStarted && this._canvasElement && this._videoElement) {
             this._intervalStarted = true;
             setInterval(() => {
                 const ctx = this._canvasElement.getContext('2d');
                 if (ctx) {
-                    ctx.drawImage(this._videoStream, 0, 0, this._canvasElement.width, this._canvasElement.height);
+                    ctx.drawImage(this._videoElement, 0, 0, this._canvasElement.width, this._canvasElement.height);
                     this._dumpImage(this._canvasElement.toDataURL('image/jpeg'));
                 } else {
-                    console.error("canvas 2d context is null");
+                    console.error("canv_videoElementt is null");
                 }
             }, 1000 / MAXIMUM_IMAGES_PER_SECOND_DUMPED);
         }

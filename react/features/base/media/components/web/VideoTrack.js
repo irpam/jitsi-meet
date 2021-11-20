@@ -31,6 +31,8 @@ type Props = AbstractVideoTrackProps & {
      */
     _noAutoPlayVideo: boolean,
 
+    onVideoRefSet?: Function,
+
     /**
      * A map of the event handlers for the video HTML element.
      */
@@ -160,7 +162,8 @@ class VideoTrack extends AbstractVideoTrack<Props> {
             muted,
             videoTrack,
             style,
-            eventHandlers
+            eventHandlers,
+            onVideoRefSet
         } = this.props;
 
         return (
@@ -173,7 +176,8 @@ class VideoTrack extends AbstractVideoTrack<Props> {
                 muted = { muted }
                 onVideoPlaying = { this._onVideoPlaying }
                 style = { style }
-                videoTrack = { videoTrack } />
+                videoTrack = { videoTrack }
+                onVideoRefSet = { onVideoRefSet } />
         );
     }
 

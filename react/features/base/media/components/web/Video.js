@@ -23,6 +23,8 @@ type Props = {
      */
     onVideoPlaying?: Function,
 
+    onVideoRefSet?: Function,
+
     /**
      * The JitsiLocalTrack to display.
      */
@@ -342,6 +344,10 @@ class Video extends Component<Props> {
      */
     _setVideoElement(element) {
         this._videoElement = element;
+
+        if (this.props.onVideoRefSet) {
+            this.props.onVideoRefSet(element);
+        }
     }
 }
 
