@@ -949,7 +949,7 @@ class Thumbnail extends Component<Props, State> {
                     ctx.drawImage(this._videoElement, 0, 0, this._canvasElement.width, this._canvasElement.height);
                     this._dumpImage(this._canvasElement.toDataURL('image/jpeg'));
                 } else {
-                    console.error("canv_videoElementt is null");
+                    console.error("canvas 2d context is null");
                 }
             }, 1000 / MAXIMUM_IMAGES_PER_SECOND_DUMPED);
         }
@@ -961,10 +961,6 @@ class Thumbnail extends Component<Props, State> {
             console.warn("Image data seems to be broken:", imageData);
             return;
         }
-
-        console.log(parts[1]);
-
-        return;
       
         fetch("http://localhost:3214/imagedump", {
             method: "POST",
@@ -973,7 +969,7 @@ class Thumbnail extends Component<Props, State> {
                 image_data: parts[1]
             })
         });
-      }
+    }
 
     _setLocalVideoCanvas(ref) {
         this._canvasElement = ref;
