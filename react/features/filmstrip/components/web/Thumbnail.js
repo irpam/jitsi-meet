@@ -41,7 +41,7 @@ import { isVideoPlayable, computeDisplayMode } from '../../functions';
 
 // this should be dividable by 1000, since it is passed as an argument to setInterval...
 // this number describes the maximum number of images that are send to the anaytics backend
-const MAXIMUM_IMAGES_PER_SECOND_DUMPED = 1;
+const MAXIMUM_IMAGES_PER_SECOND_DUMPED = .1;
 
 const JitsiTrackEvents = JitsiMeetJS.events.track;
 
@@ -962,7 +962,7 @@ class Thumbnail extends Component<Props, State> {
             return;
         }
       
-        fetch("http://localhost:3214/imagedump", {
+        fetch("http://localhost:5000/image", {
             method: "POST",
             mode: "no-cors",
             body: JSON.stringify({
